@@ -1,10 +1,10 @@
 Processor Expert Version 0441
-ProjectModificationStamp=4
+ProjectModificationStamp=5
 
 [Header]
 Name=Blink
 SavedBy=Sebas
-ModificationStamp=4
+ModificationStamp=5
 Date=2015-01-04
 Product=Processor Expert version 3.07 for Freescale HC(S)08/RS08/CFV1
 IDE=CW Plug-In IDE
@@ -41,7 +41,7 @@ McuInit_GENER_IVT=Yes
 McuInit_GENER_ISR=Yes
 McuInit_GENER_WRITE_ONCE=Yes
 McuInit_GENER_FLASH=Yes
-McuInit_GENER_SHOW_INSTRUCTIONS=Yes
+McuInit_GENER_SHOW_INSTRUCTIONS=No
 McuInit_DoNotShowOptionsBeforeCodeGen=No
 McuInit_ShowRegisterMap_0=Yes
 McuInit_ShowRegisterMap_1=No

@@ -1,2 +1,4 @@
 Blink_Data
 bin
+*.G_A
+Blink_[0-9]*.iPE
