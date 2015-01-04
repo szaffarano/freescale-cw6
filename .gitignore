@@ -1,0 +1,7 @@
+*.stg
+*.o
+*.sx
+*.tdt
+*.abs
+*.s19
+*.dbg
