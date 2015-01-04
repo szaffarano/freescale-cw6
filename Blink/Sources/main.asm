@@ -16,7 +16,7 @@
 ;
 LED_PIN     EQU   (1 << PTBD_PTBD4)
 LED_PORT    EQU   PTBD
-DELAY       EQU   1000
+DELAY       EQU   500
 
 ;
 ; Variables en ZRAM
