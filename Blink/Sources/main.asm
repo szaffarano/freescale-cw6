@@ -89,7 +89,7 @@ MAIN:
       
             JSR   INISYS
 
-; Bucle infinito
+* Loop del programa principal:
 ;
 LOOP:       BRCLR KEYREADY,FLAGS,LOOP     ; hay tecla ?
             BCLR  KEYREADY,FLAGS          ; acknowledge
