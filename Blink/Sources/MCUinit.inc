@@ -6,9 +6,9 @@
 ;**
 ;**     Project   : Blink
 ;**     Processor : MC9S08SH8CPJ
-;**     Version   : Component 01.007, Driver 01.06, CPU db: 3.00.062
-;**     Datasheet : MC9S08SH8 Rev. 3 6/2008
-;**     Date/Time : 04/01/2015, 04:34 p.m.
+;**     Version   : Bean 01.007, Driver 01.04, CPU db: 3.00.043
+;**     Datasheet : MC9S08SH8 Rev. 1 11/2007
+;**     Date/Time : 06/01/2015, 09:00 p.m.
 ;**     Abstract  :
 ;**         This module contains device initialization code 
 ;**         for selected on-chip peripherals.
@@ -19,10 +19,13 @@
 ;**     Contents  :
 ;**         No public methods
 ;**
-;**     Copyright : 1997 - 2009 Freescale Semiconductor, Inc. All Rights Reserved.
-;**     
-;**     http      : www.freescale.com
-;**     mail      : support@freescale.com
+;**     (c) Copyright UNIS, spol. s r.o. 1997-2008
+;**     UNIS, spol. s r.o.
+;**     Jundrovska 33
+;**     624 00 Brno
+;**     Czech Republic
+;**     http      : www.processorexpert.com
+;**     mail      : info@processorexpert.com
 ;** ###################################################################
 
 ; MODULE MCUinit
@@ -35,14 +38,13 @@
 
 
 ;** ===================================================================
-;**     Method      :  MCU_init (component MC9S08SH8_20)
+;**     Method      :  MCU_init (bean MC9S08SH8_20)
 ;**
 ;**     Description :
 ;**         Device initialization code for selected peripherals.
 ;** ===================================================================
 MCU_init:
   ; ### MC9S08SH8_20 "Cpu" init code ... 
-
   ; Common initialization of the write once registers 
         ; SOPT1: COPT=0,STOPE=0,IICPS=0,BKGDPE=1,RSTPE=0 
         LDA     #2
@@ -54,16 +56,12 @@ MCU_init:
         CLRA
         STA     SPMSC2                                               
   ;  System clock initialization 
-        ;Test if the device trim value is stored on the specified address
-        LDA     65455
-        CBEQA   #255, SkipTrim
         ; ICSTRM: Initialize internal clock trim from a non volatile memory 
         LDA     65455
         STA     ICSTRM
         ; ICSSC: Initialize internal clock trim from a non volatile memory 
         LDA     65454
         STA     ICSSC
-SkipTrim:
         ; ICSC1: CLKS=0,RDIV=0,IREFS=1,IRCLKEN=0,IREFSTEN=0 
         MOV     #4,ICSC1               ; Initialization of the ICS control register 1 
         ; ICSC2: BDIV=2,RANGE=0,HGO=0,LP=0,EREFS=0,ERCLKEN=0,EREFSTEN=0 
@@ -111,6 +109,15 @@ while_Cpu0:                            ; Wait until the source of reference cloc
         LDA     TPM1SC                 ; Overflow int. flag clearing (first part) 
         ; TPM1SC: TOF=0,TOIE=1,CPWMS=0,CLKSB=0,CLKSA=1,PS2=1,PS1=0,PS0=1 
         MOV     #77,TPM1SC             ; Int. flag clearing (2nd part) and timer control register setting 
+  ; ### Init_GPIO init code 
+        ; PTAPE: PTAPE2=1,PTAPE1=1 
+        LDA     PTAPE
+        ORA     #6
+        STA     PTAPE
+        ; PTADD: PTADD2=0,PTADD1=0 
+        LDA     PTADD
+        AND     #249
+        STA     PTADD
   ; ### 
         CLI                            ; Enable interrupts 
         RTS
@@ -131,9 +138,8 @@ isrVtpm1ovf:
 
         ; limpiar TOF
         BCLR  TPM1SC_TOF, TPM1SC
+        JSR       TICK1MS
         
-        JSR   BLINK     ; invoco rutina para blinquear LED
-
         PULH  ; restore de registro H
         RTI
 ; end of isrVtpm1ovf 
@@ -162,38 +168,39 @@ UNASSIGNED_ISR: EQU     $FFFF          ; unassigned interrupt service routine
 
         ORG     $FFC0                  ; Interrupt vector table
 _vect:
-        DC.W    UNASSIGNED_ISR         ; Int.no. 31 VReserved31 (at FFC0)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 30 Vacmp (at FFC2)                 Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 29 VReserved29 (at FFC4)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 28 VReserved28 (at FFC6)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 27 VReserved27 (at FFC8)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 26 Vmtim (at FFCA)                 Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 25 Vrtc (at FFCC)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 24 Viic (at FFCE)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 23 Vadc (at FFD0)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 22 VReserved22 (at FFD2)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 21 Vportb (at FFD4)                Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 20 Vporta (at FFD6)                Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 19 VReserved19 (at FFD8)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 18 Vscitx (at FFDA)                Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 17 Vscirx (at FFDC)                Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 16 Vscierr (at FFDE)               Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 15 Vspi (at FFE0)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 14 Vtpm2ovf (at FFE2)              Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 13 Vtpm2ch1 (at FFE4)              Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no. 12 Vtpm2ch0 (at FFE6)              Unassigned
-        DC.W    isrVtpm1ovf            ; Int.no. 11 Vtpm1ovf (at FFE8)              Used
-        DC.W    UNASSIGNED_ISR         ; Int.no. 10 VReserved10 (at FFEA)           Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  9 VReserved9 (at FFEC)            Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  8 VReserved8 (at FFEE)            Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  7 VReserved7 (at FFF0)            Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  6 Vtpm1ch1 (at FFF2)              Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  5 Vtpm1ch0 (at FFF4)              Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  4 VReserved4 (at FFF6)            Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  3 Vlvd (at FFF8)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  2 Virq (at FFFA)                  Unassigned
-        DC.W    UNASSIGNED_ISR         ; Int.no.  1 Vswi (at FFFC)                  Unassigned
-        DC.W    _Startup               ; Int.no.  0 Vreset (at FFFE)                Reset vector
+        DC.W    UNASSIGNED_ISR         ; Int.no.  0 VReserved31 (at FFC0)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  1 Vacmp (at FFC2)                 Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  2 VReserved29 (at FFC4)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  3 VReserved28 (at FFC6)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  4 VReserved27 (at FFC8)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  5 Vmtim (at FFCA)                 Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  6 Vrtc (at FFCC)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  7 Viic (at FFCE)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  8 Vadc (at FFD0)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no.  9 VReserved22 (at FFD2)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 10 Vportb (at FFD4)                Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 11 Vporta (at FFD6)                Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 12 VReserved19 (at FFD8)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 13 Vscitx (at FFDA)                Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 14 Vscirx (at FFDC)                Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 15 Vscierr (at FFDE)               Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 16 Vspi (at FFE0)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 17 Vtpm2ovf (at FFE2)              Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 18 Vtpm2ch1 (at FFE4)              Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 19 Vtpm2ch0 (at FFE6)              Unassigned
+        DC.W    isrVtpm1ovf            ; Int.no. 20 Vtpm1ovf (at FFE8)              Used
+        DC.W    UNASSIGNED_ISR         ; Int.no. 21 VReserved10 (at FFEA)           Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 22 VReserved9 (at FFEC)            Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 23 VReserved8 (at FFEE)            Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 24 VReserved7 (at FFF0)            Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 25 Vtpm1ch1 (at FFF2)              Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 26 Vtpm1ch0 (at FFF4)              Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 27 VReserved4 (at FFF6)            Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 28 Vlvd (at FFF8)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 29 Virq (at FFFA)                  Unassigned
+        DC.W    UNASSIGNED_ISR         ; Int.no. 30 Vswi (at FFFC)                  Unassigned
+        DC.W    _Startup               ; Int.no. 31 Vreset (at FFFE)                Reset vector
+
 
 
 
@@ -204,7 +211,7 @@ _vect:
 
 ;** ###################################################################
 ;**
-;**     This file was created by Processor Expert 3.07 [04.41]
+;**     This file was created by UNIS Processor Expert 3.03 [04.07]
 ;**     for the Freescale HCS08 series of microcontrollers.
 ;**
 ;** ###################################################################
